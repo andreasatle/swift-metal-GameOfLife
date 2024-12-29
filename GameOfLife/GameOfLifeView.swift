@@ -33,7 +33,7 @@ struct GameOfLifeView: View {
     @State private var blue = 1.0
 
     var boardColor: Color {
-        Color(red:red, green:green, blue:blue)
+        Color(red: red, green: green, blue: blue)
     }
     /// A timer that triggers game updates at regular intervals.
     private let timer = Timer.publish(every: 0.002, on: .main, in: .common).autoconnect()
