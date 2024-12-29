@@ -7,9 +7,9 @@ class GameOfLifeRenderer {
     // MARK: - Metal Properties
     private var device: MTLDevice!
     private var commandQueue: MTLCommandQueue!
-    private var updateShader: MTLComputePipelineState!
-    private var imageShader: MTLComputePipelineState!
-    private var texture: MTLTexture!
+    private var updatePipeline: MTLComputePipelineState!
+    private var imagePipeline: MTLComputePipelineState!
+    private var gameTexture: MTLTexture!
     private var updatedTexture: MTLTexture!
     private var imageTexture: MTLTexture!
 
@@ -46,8 +46,8 @@ class GameOfLifeRenderer {
             fatalError("Unable to create Metal pipeline states.")
         }
 
-        updateShader = try? device.makeComputePipelineState(function: updateFunction)
-        imageShader = try? device.makeComputePipelineState(function: imageFunction)
+        updatePipeline = try? device.makeComputePipelineState(function: updateFunction)
+        imagePipeline = try? device.makeComputePipelineState(function: imageFunction)
     }
 
     /// Creates textures for the game grid and the grayscale output.
@@ -62,7 +62,7 @@ class GameOfLifeRenderer {
         )
         imageDescriptor.usage = [.shaderRead, .shaderWrite]
 
-        texture = device.makeTexture(descriptor: gridDescriptor)
+        gameTexture = device.makeTexture(descriptor: gridDescriptor)
         updatedTexture = device.makeTexture(descriptor: gridDescriptor)
         imageTexture = device.makeTexture(descriptor: imageDescriptor)
     }
@@ -73,24 +73,24 @@ class GameOfLifeRenderer {
     /// Resets the grid to a random binary state.
     func resetGrid() {
         let randomGrid = (0..<(gridX * gridY)).map { _ in Int8.random(in: 0...1) }
-        texture.replace(region: MTLRegionMake2D(0, 0, gridX, gridY), mipmapLevel: 0, withBytes: randomGrid, bytesPerRow: gridX)
+        gameTexture.replace(region: MTLRegionMake2D(0, 0, gridX, gridY), mipmapLevel: 0, withBytes: randomGrid, bytesPerRow: gridX)
     }
 
     /// Updates the game grid by applying the compute shader and swapping textures.
     func updateGrid() {
         executeComputeShader { encoder in
-            encoder.setComputePipelineState(updateShader)
-            encoder.setTexture(texture, index: 0)
+            encoder.setComputePipelineState(updatePipeline)
+            encoder.setTexture(gameTexture, index: 0)
             encoder.setTexture(updatedTexture, index: 1)
         }
-        swap(&texture, &updatedTexture)
+        swap(&gameTexture, &updatedTexture)
     }
 
     /// Converts the current game grid texture to a grayscale `CGImage`.
     func textureToImage() -> CGImage? {
         executeComputeShader { encoder in
-            encoder.setComputePipelineState(imageShader)
-            encoder.setTexture(texture, index: 0)
+            encoder.setComputePipelineState(imagePipeline)
+            encoder.setTexture(gameTexture, index: 0)
             encoder.setTexture(imageTexture, index: 1)
         }
         return createGrayScaleImage(from: imageTexture)
@@ -116,6 +116,7 @@ class GameOfLifeRenderer {
 
     /// Creates a grayscale `CGImage` from a texture.
     private func createGrayScaleImage(from texture: MTLTexture) -> CGImage? {
+        // Avoid allocating pixelData every time by making it class variable
         texture.getBytes(&pixelData, bytesPerRow: gridX, from: MTLRegionMake2D(0, 0, gridX, gridY), mipmapLevel: 0)
 
         let colorSpace = CGColorSpaceCreateDeviceGray()

@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// A SwiftUI view for simulating and visualizing Conway's Game of Life.
 ///
@@ -24,9 +25,15 @@ struct GameOfLifeView: View {
     @State private var gameTextureImage: CGImage?
     /// A flag indicating whether the game simulation is running.
     @State private var isRunning = false
-
-    /// A timer that triggers game updates at regular intervals (every 0.01 seconds).
-    private let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
+    
+    @State private var red = 1.0
+    @State private var green = 1.0
+    @State private var blue = 1.0
+    var boardColor: Color {
+        Color(red:red, green:green, blue:blue)
+    }
+    /// A timer that triggers game updates at regular intervals.
+    private let timer = Timer.publish(every: 0.002, on: .main, in: .common).autoconnect()
 
     /// The body of the view, containing the game board and control buttons.
     var body: some View {
@@ -40,6 +47,7 @@ struct GameOfLifeView: View {
         .padding()
         .onAppear(perform: setupGame)
         .onReceive(timer) { _ in updateGame() }
+        
     }
 
     /// A computed property representing the game board.
@@ -50,7 +58,7 @@ struct GameOfLifeView: View {
                 Image(decorative: image, scale: 1.0, orientation: .up)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .colorMultiply(.yellow)
+                    .colorMultiply(boardColor)
             } else {
                 Text("Texture not available")
             }
@@ -60,16 +68,21 @@ struct GameOfLifeView: View {
     /// A computed property representing the control buttons.
     /// Provides buttons to start/pause the simulation and reset the game grid.
     private var controls: some View {
-        HStack {
-            Button(action: toggleRunning) {
-                Text(isRunning ? "Pause" : "Start")
+        VStack {
+            HStack {
+                Button(action: toggleRunning) {
+                    Text(isRunning ? "Pause" : "Start")
+                }
+                .padding()
+                
+                Button(action: resetGame) {
+                    Text("Reset")
+                }
+                .padding()
             }
-            .padding()
-
-            Button(action: resetGame) {
-                Text("Reset")
-            }
-            .padding()
+            Slider(value: $red, in: 0...1).tint(.red).padding(.horizontal)
+            Slider(value: $green, in: 0...1).tint(.green).padding(.horizontal)
+            Slider(value: $blue, in: 0...1).tint(.blue).padding(.horizontal)
         }
     }
 

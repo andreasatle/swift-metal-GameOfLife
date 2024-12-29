@@ -11,7 +11,7 @@ import SwiftUI
 struct GameOfLifeApp: App {
     var body: some Scene {
         WindowGroup {
-            GameOfLifeView(width: 800, height: 800, gridX: 512, gridY: 512)
+            GameOfLifeView(width: 600, height: 600, gridX: 512, gridY: 512)
         }
     }
 }
