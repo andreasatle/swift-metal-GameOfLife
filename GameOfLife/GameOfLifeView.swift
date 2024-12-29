@@ -25,10 +25,13 @@ struct GameOfLifeView: View {
     @State private var gameTextureImage: CGImage?
     /// A flag indicating whether the game simulation is running.
     @State private var isRunning = false
-    
+    /// Red pixel color
     @State private var red = 1.0
+    /// Green pixel color
     @State private var green = 1.0
+    /// Blue pixel color
     @State private var blue = 1.0
+
     var boardColor: Color {
         Color(red:red, green:green, blue:blue)
     }
