@@ -77,27 +77,32 @@ class GameOfLifeRenderer {
 
     /// Updates the game grid by applying the compute shader and swapping textures.
     func updateGrid() {
-        executeComputeShader(shader: updateShader, textures: [texture, updatedTexture])
+        executeComputeShader { encoder in
+            encoder.setComputePipelineState(updateShader)
+            encoder.setTexture(texture, index: 0)
+            encoder.setTexture(updatedTexture, index: 1)
+        }
         swap(&texture, &updatedTexture)
     }
 
     /// Converts the current game grid texture to a grayscale `CGImage`.
     func textureToImage() -> CGImage? {
-        executeComputeShader(shader: imageShader, textures: [texture, imageTexture])
+        executeComputeShader { encoder in
+            encoder.setComputePipelineState(imageShader)
+            encoder.setTexture(texture, index: 0)
+            encoder.setTexture(imageTexture, index: 1)
+        }
         return createGrayScaleImage(from: imageTexture)
     }
 
     // MARK: - Helper Methods
 
     /// Executes a compute shader with the specified textures.
-    private func executeComputeShader(shader: MTLComputePipelineState, textures: [MTLTexture]) {
+    private func executeComputeShader(configure: (MTLComputeCommandEncoder) -> Void) {
         guard let commandBuffer = commandQueue.makeCommandBuffer(),
               let computeEncoder = commandBuffer.makeComputeCommandEncoder() else { return }
 
-        computeEncoder.setComputePipelineState(shader)
-        for (index, texture) in textures.enumerated() {
-            computeEncoder.setTexture(texture, index: index)
-        }
+        configure(computeEncoder)
 
         let threadGroupSize = MTLSize(width: 16, height: 16, depth: 1)
         let threadGroups = MTLSize(width: (gridX + 15) / 16, height: (gridY + 15) / 16, depth: 1)
