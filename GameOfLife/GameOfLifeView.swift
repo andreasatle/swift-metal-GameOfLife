@@ -76,7 +76,7 @@ struct GameOfLifeView: View {
     /// Sets up the game by initializing the grid and rendering the initial texture.
     private func setupGame() {
         gameRenderer.initialize(gridX: gridX, gridY: gridY)
-        renderTexture()
+        renderImage()
     }
 
     /// Updates the game state and renders the updated texture.
@@ -84,7 +84,7 @@ struct GameOfLifeView: View {
     private func updateGame() {
         guard isRunning else { return }
         gameRenderer.updateGrid()
-        renderTexture()
+        renderImage()
     }
 
     /// Toggles the running state of the simulation.
@@ -95,11 +95,11 @@ struct GameOfLifeView: View {
     /// Resets the game grid to its initial state and re-renders the texture.
     private func resetGame() {
         gameRenderer.resetGrid()
-        renderTexture()
+        renderImage()
     }
 
     /// Renders the game grid as a texture and updates the `gameTextureImage` property.
-    private func renderTexture() {
+    private func renderImage() {
         gameTextureImage = gameRenderer.textureToImage()
     }
 }
