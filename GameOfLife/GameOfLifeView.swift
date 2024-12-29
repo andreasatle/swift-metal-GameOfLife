@@ -80,9 +80,11 @@ struct GameOfLifeView: View {
                 }
                 .padding()
             }
-            Slider(value: $red, in: 0...1).tint(.red).padding(.horizontal)
-            Slider(value: $green, in: 0...1).tint(.green).padding(.horizontal)
-            Slider(value: $blue, in: 0...1).tint(.blue).padding(.horizontal)
+            VStack {
+                Slider(value: $red, in: 0...1).tint(.red)
+                Slider(value: $green, in: 0...1).tint(.green)
+                Slider(value: $blue, in: 0...1).tint(.blue)
+            }.padding()
         }
     }
 
