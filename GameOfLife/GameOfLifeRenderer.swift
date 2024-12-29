@@ -67,13 +67,14 @@ class GameOfLifeRenderer {
         imageTexture = device.makeTexture(descriptor: imageDescriptor)
     }
 
+
+    // MARK: - Compute and Render Methods
+
     /// Resets the grid to a random binary state.
     func resetGrid() {
         let randomGrid = (0..<(gridX * gridY)).map { _ in Int8.random(in: 0...1) }
         texture.replace(region: MTLRegionMake2D(0, 0, gridX, gridY), mipmapLevel: 0, withBytes: randomGrid, bytesPerRow: gridX)
     }
-
-    // MARK: - Compute and Render Methods
 
     /// Updates the game grid by applying the compute shader and swapping textures.
     func updateGrid() {
