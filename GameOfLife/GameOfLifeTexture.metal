@@ -1,7 +1,7 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// Kernel function to update the Game of Life grid
+/// Kernel function to update the Game of Life grid
 kernel void updateGameOfLife(texture2d<int, access::read_write> inputTexture [[texture(0)]],
                              texture2d<int, access::read_write> outputTexture [[texture(1)]],
                              uint2 gid [[thread_position_in_grid]]) {
@@ -31,6 +31,7 @@ kernel void updateGameOfLife(texture2d<int, access::read_write> inputTexture [[t
     outputTexture.write(newState, gid);
 }
 
+/// Kernel function to map [0, 1]: int -> [0, 255]: uint, suitable for grayscale image.
 kernel void mapToGrayscale(texture2d<int, access::read> inputTexture [[texture(0)]],
                            texture2d<uint, access::write> outputTexture [[texture(1)]],
                            uint2 gid [[thread_position_in_grid]]) {
