@@ -1,14 +1,10 @@
-import Metal
 import MetalKit
 
 /// A class responsible for rendering Conway's Game of Life using Metal.
 @Observable
 class GameOfLifeRenderer {
     // MARK: - Metal Properties
-    private var device: MTLDevice!
-    private var commandQueue: MTLCommandQueue!
-    private var updatePipeline: MTLComputePipelineState!
-    private var imagePipeline: MTLComputePipelineState!
+    private var shader: ShaderLib!
     private var gameTexture: MTLTexture!
     private var updatedTexture: MTLTexture!
     private var imageTexture: MTLTexture!
@@ -22,33 +18,18 @@ class GameOfLifeRenderer {
     // MARK: - Initialization
 
     /// Initializes the renderer with the specified grid dimensions.
-    func initialize(gridX: Int, gridY: Int) {
+    func initialize(gridX: Int = 512, gridY: Int = 512) {
         self.gridX = gridX
         self.gridY = gridY
 
-        setupMetal()
+        //setupMetal()
+        shader = ShaderLib()
         createTextures()
         resetGrid()
         pixelData = [UInt8](repeating: 0, count: gridX * gridY)
     }
 
     // MARK: - Setup Methods
-
-    /// Sets up the Metal device, command queue, and shaders.
-    private func setupMetal() {
-        device = MTLCreateSystemDefaultDevice()
-        commandQueue = device.makeCommandQueue()
-
-        guard let library = device.makeDefaultLibrary(),
-              let updateFunction = library.makeFunction(name: "updateGameOfLife"),
-              let imageFunction = library.makeFunction(name: "mapToGrayscale")
-        else {
-            fatalError("Unable to create Metal pipeline states.")
-        }
-
-        updatePipeline = try? device.makeComputePipelineState(function: updateFunction)
-        imagePipeline = try? device.makeComputePipelineState(function: imageFunction)
-    }
 
     /// Creates textures for the game grid and the grayscale output.
     private func createTextures() {
@@ -62,9 +43,9 @@ class GameOfLifeRenderer {
         )
         imageDescriptor.usage = [.shaderRead, .shaderWrite]
 
-        gameTexture = device.makeTexture(descriptor: gridDescriptor)
-        updatedTexture = device.makeTexture(descriptor: gridDescriptor)
-        imageTexture = device.makeTexture(descriptor: imageDescriptor)
+        gameTexture = shader.device.makeTexture(descriptor: gridDescriptor)
+        updatedTexture = shader.device.makeTexture(descriptor: gridDescriptor)
+        imageTexture = shader.device.makeTexture(descriptor: imageDescriptor)
     }
 
 
@@ -78,8 +59,8 @@ class GameOfLifeRenderer {
 
     /// Updates the game grid by applying the compute shader and swapping textures.
     func updateGrid() {
-        executeComputeShader { encoder in
-            encoder.setComputePipelineState(updatePipeline)
+        shader.execute(gridX, gridY) { encoder in
+            encoder.setComputePipelineState(shader.updateGameOfLife)
             encoder.setTexture(gameTexture, index: 0)
             encoder.setTexture(updatedTexture, index: 1)
         }
@@ -88,8 +69,8 @@ class GameOfLifeRenderer {
 
     /// Converts the current game grid texture to a grayscale `CGImage`.
     func textureToImage() -> CGImage? {
-        executeComputeShader { encoder in
-            encoder.setComputePipelineState(imagePipeline)
+        shader.execute(gridX, gridY) { encoder in
+            encoder.setComputePipelineState(shader.mapToGrayscale)
             encoder.setTexture(gameTexture, index: 0)
             encoder.setTexture(imageTexture, index: 1)
         }
@@ -98,21 +79,6 @@ class GameOfLifeRenderer {
 
     // MARK: - Helper Methods
 
-    /// Executes a compute shader with the specified textures.
-    private func executeComputeShader(configure: (MTLComputeCommandEncoder) -> Void) {
-        guard let commandBuffer = commandQueue.makeCommandBuffer(),
-              let computeEncoder = commandBuffer.makeComputeCommandEncoder() else { return }
-
-        configure(computeEncoder)
-
-        let threadGroupSize = MTLSize(width: 16, height: 16, depth: 1)
-        let threadGroups = MTLSize(width: (gridX + 15) / 16, height: (gridY + 15) / 16, depth: 1)
-
-        computeEncoder.dispatchThreadgroups(threadGroups, threadsPerThreadgroup: threadGroupSize)
-        computeEncoder.endEncoding()
-        commandBuffer.commit()
-        commandBuffer.waitUntilCompleted()
-    }
 
     /// Creates a grayscale `CGImage` from a texture.
     private func createGrayScaleImage(from texture: MTLTexture) -> CGImage? {

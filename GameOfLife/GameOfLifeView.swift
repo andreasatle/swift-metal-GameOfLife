@@ -18,7 +18,7 @@ struct GameOfLifeView: View {
     let gridX: Int
     /// The number of vertical cells in the game grid.
     let gridY: Int
-
+    
     /// The renderer responsible for managing the game state and generating the texture.
     @State private var gameRenderer = GameOfLifeRenderer()
     /// The texture representing the current game grid as an image.
@@ -31,28 +31,31 @@ struct GameOfLifeView: View {
     @State private var green = 1.0
     /// Blue pixel color
     @State private var blue = 1.0
-
+    
+    @State private var iteration = 0
+    
     var boardColor: Color {
         Color(red: red, green: green, blue: blue)
     }
+    
     /// A timer that triggers game updates at regular intervals.
-    private let timer = Timer.publish(every: 0.002, on: .main, in: .common).autoconnect()
-
+    private let timer = Timer.publish(every: 0.00001, on: .main, in: .common).autoconnect()
+    
     /// The body of the view, containing the game board and control buttons.
     var body: some View {
         VStack {
+            Text("Iteration: \(iteration)")
             gameBoard
                 .frame(width: width, height: height)
                 .border(Color.gray)
-
+            
             controls
         }
         .padding()
         .onAppear(perform: setupGame)
         .onReceive(timer) { _ in updateGame() }
-        
     }
-
+    
     /// A computed property representing the game board.
     /// Displays the game grid as an image or a placeholder text if the texture is unavailable.
     private var gameBoard: some View {
@@ -67,7 +70,7 @@ struct GameOfLifeView: View {
             }
         }
     }
-
+    
     /// A computed property representing the control buttons.
     /// Provides buttons to start/pause the simulation and reset the game grid.
     private var controls: some View {
@@ -90,32 +93,36 @@ struct GameOfLifeView: View {
             }.padding()
         }
     }
-
+    
     /// Sets up the game by initializing the grid and rendering the initial texture.
     private func setupGame() {
         gameRenderer.initialize(gridX: gridX, gridY: gridY)
         renderImage()
+        iteration = 0
     }
-
+    
     /// Updates the game state and renders the updated texture.
     /// This is triggered by the timer when the simulation is running.
     private func updateGame() {
         guard isRunning else { return }
+        iteration += 1
         gameRenderer.updateGrid()
         renderImage()
+        
     }
-
+    
     /// Toggles the running state of the simulation.
     private func toggleRunning() {
         isRunning.toggle()
     }
-
+    
     /// Resets the game grid to its initial state and re-renders the texture.
     private func resetGame() {
         gameRenderer.resetGrid()
+        iteration = 0
         renderImage()
     }
-
+    
     /// Renders the game grid as a texture and updates the `gameTextureImage` property.
     private func renderImage() {
         gameTextureImage = gameRenderer.textureToImage()
