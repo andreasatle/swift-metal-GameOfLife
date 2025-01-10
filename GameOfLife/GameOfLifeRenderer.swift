@@ -3,7 +3,7 @@ import MetalKit
 /// A class responsible for rendering Conway's Game of Life using Metal.
 @Observable
 class GameOfLifeRenderer {
-    private var shader: ShaderLib!
+    private var shaderLib: ShaderLib!
     private var textures: GameOfLifeTextures!
 
     private var gridX: Int = 512
@@ -16,8 +16,8 @@ class GameOfLifeRenderer {
         self.gridX = gridX
         self.gridY = gridY
 
-        shader = ShaderLib()
-        textures = GameOfLifeTextures(gridX: gridX, gridY: gridY, shader: shader)
+        shaderLib = ShaderLib()
+        textures = GameOfLifeTextures(gridX: gridX, gridY: gridY, shader: shaderLib)
         resetGrid()
         pixelData = [UInt8](repeating: 0, count: gridX * gridY)
     }
@@ -30,8 +30,8 @@ class GameOfLifeRenderer {
 
     /// Updates the game grid by applying the compute shader and swapping textures.
     func updateGrid() {
-        shader.execute(gridX, gridY) { encoder in
-            encoder.setComputePipelineState(shader.updateGameOfLife)
+        shaderLib.execute(gridX, gridY) { encoder in
+            encoder.setComputePipelineState(shaderLib.updateGameOfLife)
             encoder.setTexture(textures.game, index: 0)
             encoder.setTexture(textures.updated, index: 1)
         }
@@ -40,8 +40,8 @@ class GameOfLifeRenderer {
 
     /// Converts the current game grid texture to a grayscale `CGImage`.
     func textureToImage() -> CGImage? {
-        shader.execute(gridX, gridY) { encoder in
-            encoder.setComputePipelineState(shader.mapToGrayscale)
+        shaderLib.execute(gridX, gridY) { encoder in
+            encoder.setComputePipelineState(shaderLib.mapToGrayscale)
             encoder.setTexture(textures.game, index: 0)
             encoder.setTexture(textures.image, index: 1)
         }
