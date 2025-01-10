@@ -25,19 +25,9 @@ struct GameOfLifeView: View {
     @State private var gameTextureImage: CGImage?
     /// A flag indicating whether the game simulation is running.
     @State private var isRunning = false
-    /// Red pixel color
-    @State private var red = 1.0
-    /// Green pixel color
-    @State private var green = 1.0
-    /// Blue pixel color
-    @State private var blue = 1.0
-    
+    /// Iteration counter
     @State private var iteration = 0
-    
-    var boardColor: Color {
-        Color(red: red, green: green, blue: blue)
-    }
-    
+        
     /// A timer that triggers game updates at regular intervals.
     private let timer = Timer.publish(every: 0.00001, on: .main, in: .common).autoconnect()
     
@@ -47,7 +37,7 @@ struct GameOfLifeView: View {
             Text("Iteration: \(iteration)")
             gameBoard
                 .frame(width: width, height: height)
-                .border(Color.gray)
+                .border(.gray)
             
             controls
         }
@@ -64,7 +54,7 @@ struct GameOfLifeView: View {
                 Image(decorative: image, scale: 1.0, orientation: .up)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .colorMultiply(boardColor)
+                    .colorMultiply(.yellow)
             } else {
                 Text("Texture not available")
             }
@@ -86,11 +76,6 @@ struct GameOfLifeView: View {
                 }
                 .padding()
             }
-            VStack {
-                Slider(value: $red, in: 0...1).tint(.red)
-                Slider(value: $green, in: 0...1).tint(.green)
-                Slider(value: $blue, in: 0...1).tint(.blue)
-            }.padding()
         }
     }
     
