@@ -6,13 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		83A3461C2D247BCF00F25C4C /* GameOfLifeTextures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A3461B2D247BCF00F25C4C /* GameOfLifeTextures.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		8358BDA22D0C986B00D209D9 /* GameOfLife.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GameOfLife.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		83A3461B2D247BCF00F25C4C /* GameOfLifeTextures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOfLifeTextures.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -37,7 +32,6 @@
 		8358BD992D0C986B00D209D9 = {
 			isa = PBXGroup;
 			children = (
-				83A3461B2D247BCF00F25C4C /* GameOfLifeTextures.swift */,
 				8358BDA42D0C986B00D209D9 /* GameOfLife */,
 				8358BDA32D0C986B00D209D9 /* Products */,
 			);
@@ -125,7 +119,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				83A3461C2D247BCF00F25C4C /* GameOfLifeTextures.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
